@@ -40,6 +40,7 @@
     "@gluestack-ui/toast": "^1.0.7",
     "@gluestack-ui/tooltip": "^0.1.33",
     "@legendapp/motion": "^2.4.0",
+    "@react-navigation/native": "^6.1.18",
     "babel-plugin-module-resolver": "^5.0.2",
     "expo": "~51.0.28",
     "expo-status-bar": "~1.12.1",
