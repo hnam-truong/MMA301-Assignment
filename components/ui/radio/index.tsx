@@ -1,17 +1,17 @@
-"use client";
-import React, { useMemo } from "react";
-import { createRadio } from "@gluestack-ui/radio";
-import { Svg } from "react-native-svg";
-import { Pressable, View, Platform, Text } from "react-native";
-import { tva } from "@gluestack-ui/nativewind-utils/tva";
+'use client';
+import React, { useMemo } from 'react';
+import { createRadio } from '@gluestack-ui/radio';
+import { Svg } from 'react-native-svg';
+import { Pressable, View, Platform, Text } from 'react-native';
+import { tva } from '@gluestack-ui/nativewind-utils/tva';
 import {
   withStyleContext,
   useStyleContext,
-} from "@gluestack-ui/nativewind-utils/withStyleContext";
-import { cssInterop } from "nativewind";
-import { withStates } from "@gluestack-ui/nativewind-utils/withStates";
-import { withStyleContextAndStates } from "@gluestack-ui/nativewind-utils/withStyleContextAndStates";
-import type { VariantProps } from "@gluestack-ui/nativewind-utils";
+} from '@gluestack-ui/nativewind-utils/withStyleContext';
+import { cssInterop } from 'nativewind';
+import { withStates } from '@gluestack-ui/nativewind-utils/withStates';
+import { withStyleContextAndStates } from '@gluestack-ui/nativewind-utils/withStyleContextAndStates';
+import type { VariantProps } from '@gluestack-ui/nativewind-utils';
 
 const IndicatorWrapper = React.forwardRef<
   React.ElementRef<typeof View>,
@@ -58,11 +58,11 @@ const PrimitiveIcon = React.forwardRef<
       color,
       classNameColor,
       size,
-      stroke = "currentColor",
+      stroke = 'currentColor',
       as: AsComp,
       ...props
     },
-    ref,
+    ref
   ) => {
     color = color ?? classNameColor;
     const sizeProps = useMemo(() => {
@@ -77,9 +77,9 @@ const PrimitiveIcon = React.forwardRef<
     if (fill) {
       colorProps = { ...colorProps, fill: fill };
     }
-    if (stroke !== "currentColor") {
+    if (stroke !== 'currentColor') {
       colorProps = { ...colorProps, stroke: stroke };
-    } else if (stroke === "currentColor" && color !== undefined) {
+    } else if (stroke === 'currentColor' && color !== undefined) {
       colorProps = { ...colorProps, stroke: color };
     }
 
@@ -89,103 +89,103 @@ const PrimitiveIcon = React.forwardRef<
     return (
       <Svg ref={ref} height={height} width={width} {...colorProps} {...props} />
     );
-  },
+  }
 );
 
 const radioStyle = tva({
-  base: "group/radio flex-row justify-start items-center web:cursor-pointer data-[disabled=true]:web:cursor-not-allowed",
+  base: 'group/radio flex-row justify-start items-center web:cursor-pointer data-[disabled=true]:web:cursor-not-allowed',
   variants: {
     size: {
-      sm: "gap-1.5",
-      md: "gap-2",
-      lg: "gap-2",
+      sm: 'gap-1.5',
+      md: 'gap-2',
+      lg: 'gap-2',
     },
   },
 });
 
 const radioGroupStyle = tva({
-  base: "gap-2",
+  base: 'gap-2',
 });
 
 const radioIconStyle = tva({
-  base: "rounded-full justify-center items-center text-background-800 fill-background-800",
+  base: 'rounded-full justify-center items-center text-background-800 fill-background-800',
 
   parentVariants: {
     size: {
-      sm: "h-[9px] w-[9px]",
-      md: "h-3 w-3",
-      lg: "h-4 w-4",
+      sm: 'h-[9px] w-[9px]',
+      md: 'h-3 w-3',
+      lg: 'h-4 w-4',
     },
   },
 });
 
 const radioIndicatorStyle = tva({
-  base: "justify-center items-center bg-transparent border-outline-400 border-2 rounded-full data-[focus-visible=true]:web:outline-2 data-[focus-visible=true]:web:outline-primary-700 data-[focus-visible=true]:web:outline data-[checked=true]:border-primary-600 data-[checked=true]:bg-transparent data-[hover=true]:border-outline-500 data-[hover=true]:bg-transparent data-[hover=true]:data-[checked=true]:bg-transparent data-[hover=true]:data-[checked=true]:border-primary-700 data-[hover=true]:data-[invalid=true]:border-error-700 data-[hover=true]:data-[disabled=true]:opacity-40 data-[hover=true]:data-[disabled=true]:border-outline-400 data-[hover=true]:data-[disabled=true]:data-[invalid=true]:border-error-400 data-[active=true]:bg-transparent data-[active=true]:border-primary-800 data-[invalid=true]:border-error-700 data-[disabled=true]:opacity-40 data-[disabled=true]:data-[checked=true]:border-outline-400 data-[disabled=true]:data-[checked=true]:bg-transparent data-[disabled=true]:data-[invalid=true]:border-error-400",
+  base: 'justify-center items-center bg-transparent border-outline-400 border-2 rounded-full data-[focus-visible=true]:web:outline-2 data-[focus-visible=true]:web:outline-primary-700 data-[focus-visible=true]:web:outline data-[checked=true]:border-primary-600 data-[checked=true]:bg-transparent data-[hover=true]:border-outline-500 data-[hover=true]:bg-transparent data-[hover=true]:data-[checked=true]:bg-transparent data-[hover=true]:data-[checked=true]:border-primary-700 data-[hover=true]:data-[invalid=true]:border-error-700 data-[hover=true]:data-[disabled=true]:opacity-40 data-[hover=true]:data-[disabled=true]:border-outline-400 data-[hover=true]:data-[disabled=true]:data-[invalid=true]:border-error-400 data-[active=true]:bg-transparent data-[active=true]:border-primary-800 data-[invalid=true]:border-error-700 data-[disabled=true]:opacity-40 data-[disabled=true]:data-[checked=true]:border-outline-400 data-[disabled=true]:data-[checked=true]:bg-transparent data-[disabled=true]:data-[invalid=true]:border-error-400',
   parentVariants: {
     size: {
-      sm: "h-4 w-4",
-      md: "h-5 w-5",
-      lg: "h-6 w-6",
+      sm: 'h-4 w-4',
+      md: 'h-5 w-5',
+      lg: 'h-6 w-6',
     },
   },
 });
 
 const radioLabelStyle = tva({
-  base: "text-typography-600 data-[checked=true]:text-typography-900 data-[hover=true]:text-typography-900 data-[hover=true]:data-[disabled=true]:text-typography-600 data-[hover=true]:data-[disabled=true]:data-[checked=true]:text-typography-900 data-[active=true]:text-typography-900 data-[active=true]:data-[checked=true]:text-typography-900 data-[disabled=true]:opacity-40 web:select-none",
+  base: 'text-typography-600 data-[checked=true]:text-typography-900 data-[hover=true]:text-typography-900 data-[hover=true]:data-[disabled=true]:text-typography-600 data-[hover=true]:data-[disabled=true]:data-[checked=true]:text-typography-900 data-[active=true]:text-typography-900 data-[active=true]:data-[checked=true]:text-typography-900 data-[disabled=true]:opacity-40 web:select-none',
   parentVariants: {
     size: {
-      "2xs": "text-2xs",
-      xs: "text-xs",
-      sm: "text-sm",
-      md: "text-base",
-      lg: "text-lg",
-      xl: "text-xl",
-      "2xl": "text-2xl",
-      "3xl": "text-3xl",
-      "4xl": "text-4xl",
-      "5xl": "text-5xl",
-      "6xl": "text-6xl",
+      '2xs': 'text-2xs',
+      'xs': 'text-xs',
+      'sm': 'text-sm',
+      'md': 'text-base',
+      'lg': 'text-lg',
+      'xl': 'text-xl',
+      '2xl': 'text-2xl',
+      '3xl': 'text-3xl',
+      '4xl': 'text-4xl',
+      '5xl': 'text-5xl',
+      '6xl': 'text-6xl',
     },
   },
 });
 
-const SCOPE = "Radio";
+const SCOPE = 'Radio';
 
 const UIRadio = createRadio({
-  Root: (Platform.OS === "web"
+  Root: (Platform.OS === 'web'
     ? withStyleContext(View, SCOPE)
     : withStyleContextAndStates(Pressable, SCOPE)) as ReturnType<
     typeof withStyleContextAndStates<typeof Pressable>
   >,
   Group: View,
-  Icon: Platform.OS === "web" ? IconWrapper : withStates(IconWrapper),
+  Icon: Platform.OS === 'web' ? IconWrapper : withStates(IconWrapper),
   Indicator:
-    Platform.OS === "web" ? IndicatorWrapper : withStates(IndicatorWrapper),
-  Label: Platform.OS === "web" ? LabelWrapper : withStates(LabelWrapper),
+    Platform.OS === 'web' ? IndicatorWrapper : withStates(IndicatorWrapper),
+  Label: Platform.OS === 'web' ? LabelWrapper : withStates(LabelWrapper),
 });
 
-cssInterop(UIRadio, { className: "style" });
-cssInterop(UIRadio.Group, { className: "style" });
-cssInterop(IndicatorWrapper, { className: "style" });
-cssInterop(LabelWrapper, { className: "style" });
+cssInterop(UIRadio, { className: 'style' });
+cssInterop(UIRadio.Group, { className: 'style' });
+cssInterop(IndicatorWrapper, { className: 'style' });
+cssInterop(LabelWrapper, { className: 'style' });
 //@ts-ignore
 cssInterop(IconWrapper, {
   className: {
-    target: "style",
+    target: 'style',
     nativeStyleToProp: {
       height: true,
       width: true,
       fill: true,
-      color: "classNameColor",
+      color: 'classNameColor',
       stroke: true,
     },
   },
 });
 
-type IRadioProps = Omit<React.ComponentProps<typeof UIRadio>, "context"> &
+type IRadioProps = Omit<React.ComponentProps<typeof UIRadio>, 'context'> &
   VariantProps<typeof radioStyle>;
 const Radio = React.forwardRef<React.ElementRef<typeof UIRadio>, IRadioProps>(
-  ({ className, size = "md", ...props }, ref) => {
+  ({ className, size = 'md', ...props }, ref) => {
     return (
       <UIRadio
         className={radioStyle({ class: className, size })}
@@ -194,7 +194,7 @@ const Radio = React.forwardRef<React.ElementRef<typeof UIRadio>, IRadioProps>(
         context={{ size }}
       />
     );
-  },
+  }
 );
 
 type IRadioGroupProps = React.ComponentProps<typeof UIRadio.Group> &
@@ -258,7 +258,7 @@ const RadioIcon = React.forwardRef<
 >(({ className, size, ...props }, ref) => {
   const { size: parentSize } = useStyleContext(SCOPE);
 
-  if (typeof size === "number") {
+  if (typeof size === 'number') {
     return (
       <UIRadio.Icon
         ref={ref}
@@ -295,10 +295,10 @@ const RadioIcon = React.forwardRef<
   );
 });
 
-Radio.displayName = "Radio";
-RadioGroup.displayName = "RadioGroup";
-RadioIndicator.displayName = "RadioIndicator";
-RadioLabel.displayName = "RadioLabel";
-RadioIcon.displayName = "RadioIcon";
+Radio.displayName = 'Radio';
+RadioGroup.displayName = 'RadioGroup';
+RadioIndicator.displayName = 'RadioIndicator';
+RadioLabel.displayName = 'RadioLabel';
+RadioIcon.displayName = 'RadioIcon';
 
 export { Radio, RadioGroup, RadioIndicator, RadioLabel, RadioIcon };
