@@ -17,25 +17,25 @@ import * as Clipboard from "expo-clipboard";
 import "nativewind";
 import { useFavorites } from "../FavoritesContext";
 import CircularMenu from "@/components/CircularMenu";
-import { ArtTool } from "@/type/art-tool";
-import { ArtToolApi } from "@/api/artTool";
+import { Item } from "@/type/item";
+import { ItemApi } from "@/api/item";
 
 const { width: screenWidth } = Dimensions.get("window");
 const numColumns = 2;
 const itemWidth = screenWidth / numColumns - 20;
 
 export default function HomeScreen() {
-  const [artTools, setArtTools] = useState<ArtTool[]>([]);
-  const [filteredTools, setFilteredTools] = useState<ArtTool[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const {
     state: { favorites },
     dispatch,
   } = useFavorites();
   const [menuVisible, setMenuVisible] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<ArtTool | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [heights, setHeights] = useState<{ [key: string]: number }>({});
   const router = useRouter();
@@ -45,14 +45,14 @@ export default function HomeScreen() {
   const searchInputRef = useRef<TextInput | null>(null);
 
   useEffect(() => {
-    fetchArtTools();
+    fetchItems();
   }, []);
 
   useEffect(() => {
     if (!menuVisible) {
-      filterArtTools();
+      filterItems();
     }
-  }, [artTools, searchQuery, selectedBrand, menuVisible]);
+  }, [items, searchQuery, selectedCategory, menuVisible]);
 
   useEffect(() => {
     Animated.timing(searchFilterFadeAnim, {
@@ -62,45 +62,49 @@ export default function HomeScreen() {
     }).start();
   }, [menuVisible]);
 
-  const fetchArtTools = async () => {
+  const fetchItems = async () => {
     setIsLoading(true);
     try {
-      const data = await ArtToolApi.getAll();
+      const data = await ItemApi.getAll();
+      const sortedData = data.sort((a, b) => Number(b.id) - Number(a.id));
+
       const newHeights: { [key: string]: number } = {};
       await Promise.all(
-        data.map(async (tool: ArtTool) => {
+        sortedData.map(async (item: Item) => {
           await new Promise<void>((resolve) => {
-            Image.getSize(tool.image, (width, height) => {
+            Image.getSize(item.image, (width, height) => {
               const aspectRatio = width / height;
-              newHeights[tool.id] = itemWidth / aspectRatio;
+              newHeights[item.id] = itemWidth / aspectRatio;
               resolve();
             });
           });
         })
       );
       setHeights(newHeights);
-      setArtTools(data);
-      setFilteredTools(data);
+      setItems(sortedData);
+      setFilteredItems(sortedData);
     } catch (error) {
-      console.error("Error fetching art tools:", error);
+      console.error("Error fetching items:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filterArtTools = () => {
-    let filtered = artTools;
+  const filterItems = () => {
+    let filtered = items;
     if (searchQuery) {
       filtered = filtered.filter(
-        (tool) =>
-          tool.artName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          tool.brand.toLowerCase().includes(searchQuery.toLowerCase())
+        (item) =>
+          item.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.itemCategory.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
-    if (selectedBrand) {
-      filtered = filtered.filter((tool) => tool.brand === selectedBrand);
+    if (selectedCategory) {
+      filtered = filtered.filter(
+        (item) => item.itemCategory === selectedCategory
+      );
     }
-    setFilteredTools(filtered);
+    setFilteredItems(filtered);
   };
 
   const toggleFavorite = (id: string) => {
@@ -111,10 +115,10 @@ export default function HomeScreen() {
     }
   };
 
-  const handleLongPress = (artTool: ArtTool, event: any) => {
+  const handleLongPress = (item: Item, event: any) => {
     const { pageX, pageY } = event.nativeEvent;
     setMenuPosition({ x: pageX, y: pageY });
-    setSelectedItem(artTool);
+    setSelectedItem(item);
     setMenuVisible(true);
     Animated.timing(fadeAnim, {
       toValue: 0.3,
@@ -166,12 +170,17 @@ export default function HomeScreen() {
     </View>
   );
 
-  const renderItem = ({ item }: { item: unknown }) => {
+  const renderItem = ({ item }: { item: Item | any }) => {
+    const typedItem = item as Item;
     if (isLoading) return renderSkeletonItem();
 
-    const artTool = item as ArtTool;
-    const isFavorite = favorites.includes(artTool.id);
-    const isSelected = selectedItem && selectedItem.id === artTool.id;
+    const isFavorite = favorites.includes(typedItem.id);
+    const isSelected = selectedItem && selectedItem.id === typedItem.id;
+
+    const discountedPrice =
+      typedItem.percentage > 0
+        ? typedItem.price * (1 - typedItem.percentage)
+        : typedItem.price;
 
     return (
       <TouchableOpacity
@@ -179,13 +188,13 @@ export default function HomeScreen() {
           if (menuVisible) {
             handleCloseMenu();
           } else {
-            router.push({ pathname: "/detail", params: { id: artTool.id } });
+            router.push({ pathname: "/detail", params: { id: typedItem.id } });
           }
         }}
-        onLongPress={(event) => handleLongPress(artTool, event)}
+        onLongPress={(event) => handleLongPress(typedItem, event)}
         delayLongPress={300}
         className="mb-4 self-center"
-        disabled={menuVisible && selectedItem?.id !== artTool.id}
+        disabled={menuVisible && selectedItem?.id !== typedItem.id}
       >
         <Animated.View
           className="rounded-lg bg-white overflow-hidden"
@@ -193,23 +202,61 @@ export default function HomeScreen() {
             opacity: isSelected || !menuVisible ? 1 : 0.5,
             width: itemWidth,
             pointerEvents:
-              menuVisible && selectedItem?.id !== artTool.id ? "none" : "auto",
+              menuVisible && selectedItem?.id !== typedItem.id
+                ? "none"
+                : "auto",
           }}
         >
-          <View className="rounded-lg bg-white border border-gray-200">
+          <View className="rounded-lg bg-white border border-gray-200 ">
             <Image
-              source={{ uri: artTool.image }}
+              source={{ uri: typedItem.image }}
               style={{
                 width: itemWidth,
-                height: heights[artTool.id] || 200,
+                height: heights[typedItem.id] || 150,
+                borderRadius: 8,
               }}
-              resizeMode="contain"
+              resizeMode="cover"
             />
+            {/* Heart Icon for Favorites */}
             {isFavorite && (
               <View className="absolute top-2 right-2 bg-white rounded-full p-1">
                 <Heart size={16} color="#EF4444" fill="#EF4444" />
               </View>
             )}
+
+            {/* Information */}
+            <View className="p-2">
+              <Text className="text-lg font-bold mt-2">
+                {typedItem.itemName}
+              </Text>
+              <Text className="text-sm text-gray-500">
+                Category: {typedItem.itemCategory}
+              </Text>
+
+              {typedItem.percentage > 0 ? (
+                <View className="flex-row items-center">
+                  <Text className="text-sm text-gray-500 line-through mr-2">
+                    ${typedItem.price.toFixed(2)}
+                  </Text>
+                  <Text className="text-lg text-red-500 font-bold">
+                    ${discountedPrice.toFixed(2)}
+                  </Text>
+                </View>
+              ) : (
+                <Text className="text-lg text-gray-900 font-bold">
+                  ${typedItem.price.toFixed(2)}
+                </Text>
+              )}
+
+              <Text className="text-sm text-gray-500">
+                Is Boolean: {typedItem.isBoolean ? "Yes" : "No"}
+              </Text>
+              {typedItem.percentage > 0 && (
+                <Text className="text-sm text-red-500">
+                  Percentage: -{(typedItem.percentage * 100).toFixed(0)}%
+                </Text>
+              )}
+            </View>
           </View>
         </Animated.View>
       </TouchableOpacity>
@@ -220,9 +267,7 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-gray-100 mb-16">
       <View className="pt-4 px-4">
         <Text className="text-3xl font-bold">Hi, Artist</Text>
-        <Text className="text-gray-600 mb-4">
-          Find your perfect art tools today
-        </Text>
+        <Text className="text-gray-600 mb-4">Find your items</Text>
       </View>
       <Animated.View style={{ opacity: searchFilterFadeAnim }}>
         <View className="px-4 pb-2">
@@ -230,7 +275,7 @@ export default function HomeScreen() {
             <Search size={20} className="text-gray-400 mr-2" />
             <TextInput
               ref={searchInputRef}
-              placeholder="Search art tools..."
+              placeholder="Search items..."
               value={searchQuery}
               onChangeText={setSearchQuery}
               className="flex-1"
@@ -241,7 +286,7 @@ export default function HomeScreen() {
                 onPress={() => {
                   if (!menuVisible) {
                     setSearchQuery("");
-                    searchInputRef.current?.focus(); // Focus the TextInput
+                    searchInputRef.current?.focus();
                   }
                 }}
                 disabled={menuVisible}
@@ -259,40 +304,46 @@ export default function HomeScreen() {
           >
             <TouchableOpacity
               className={`px-4 py-2 mr-2 rounded-full shadow ${
-                selectedBrand === null ? "bg-blue-500" : "bg-white"
+                selectedCategory === null ? "bg-blue-500" : "bg-white"
               }`}
-              onPress={() => !menuVisible && setSelectedBrand(null)}
+              onPress={() => !menuVisible && setSelectedCategory(null)}
               disabled={menuVisible}
             >
               <Text
                 className={
-                  selectedBrand === null ? "text-white" : "text-gray-800"
+                  selectedCategory === null ? "text-white" : "text-gray-800"
                 }
               >
                 All
               </Text>
             </TouchableOpacity>
-            {[...new Set(artTools.map((tool) => tool.brand))].map((brand) => (
-              <TouchableOpacity
-                key={brand}
-                className={`px-4 py-2 mr-2 rounded-full shadow ${
-                  selectedBrand === brand ? "bg-blue-500" : "bg-white"
-                }`}
-                onPress={() =>
-                  !menuVisible &&
-                  setSelectedBrand(brand === selectedBrand ? null : brand)
-                }
-                disabled={menuVisible}
-              >
-                <Text
-                  className={
-                    selectedBrand === brand ? "text-white" : "text-gray-800"
+            {[...new Set(items.map((item) => item.itemCategory))].map(
+              (category) => (
+                <TouchableOpacity
+                  key={category}
+                  className={`px-4 py-2 mr-2 rounded-full shadow ${
+                    selectedCategory === category ? "bg-blue-500" : "bg-white"
+                  }`}
+                  onPress={() =>
+                    !menuVisible &&
+                    setSelectedCategory(
+                      category === selectedCategory ? null : category
+                    )
                   }
+                  disabled={menuVisible}
                 >
-                  {brand}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    className={
+                      selectedCategory === category
+                        ? "text-white"
+                        : "text-gray-800"
+                    }
+                  >
+                    {category}
+                  </Text>
+                </TouchableOpacity>
+              )
+            )}
           </ScrollView>
         </View>
       </Animated.View>
@@ -301,8 +352,8 @@ export default function HomeScreen() {
         <Text className="text-lg font-semibold">
           {isLoading
             ? "Loading..."
-            : `${filteredTools.length} ${
-                filteredTools.length === 1 ? "item" : "items"
+            : `${filteredItems.length} ${
+                filteredItems.length === 1 ? "item" : "items"
               } found`}
         </Text>
       </View>
@@ -313,9 +364,9 @@ export default function HomeScreen() {
         className="flex-1"
       >
         <MasonryList
-          data={isLoading ? Array(10).fill({}) : filteredTools}
+          data={isLoading ? Array(10).fill({}) : filteredItems}
           keyExtractor={(item, index) =>
-            isLoading ? `skeleton-${index}` : (item as ArtTool).id
+            isLoading ? `skeleton-${index}` : (item as Item).id
           }
           numColumns={numColumns}
           showsVerticalScrollIndicator={false}

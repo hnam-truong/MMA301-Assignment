@@ -1,6 +1,6 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import { Home, Heart } from "lucide-react-native";
+import { Home, Heart, Layers3 } from "lucide-react-native";
 
 export default function TabLayout() {
   return (
@@ -37,6 +37,14 @@ export default function TabLayout() {
         options={{
           title: "Favorites",
           tabBarIcon: ({ color }) => <Heart color={color} size={24} />,
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="third"
+        options={{
+          title: "Third",
+          tabBarIcon: ({ color }) => <Layers3 color={color} size={24} />,
           headerShown: false,
         }}
       />

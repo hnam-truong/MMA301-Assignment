@@ -7,7 +7,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Heart, Link, Download, X } from "lucide-react-native";
-import { ArtTool } from "@/type/art-tool";
+import { Item } from "@/type/item";
 
 interface CircularMenuProps {
   isVisible: boolean;
@@ -17,7 +17,7 @@ interface CircularMenuProps {
   onDownload: () => void;
   position: { x: number; y: number };
   favorites: string[];
-  selectedItem: ArtTool | null;
+  selectedItem: Item | null;
 }
 
 const CircularMenu: React.FC<CircularMenuProps> = ({

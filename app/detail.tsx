@@ -5,15 +5,14 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   Dimensions,
   Modal,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { Heart, Star, StarHalf, X } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArtToolApi } from "@/api/artTool";
-import { ArtTool } from "@/type/art-tool";
+import { ItemApi } from "@/api/item";
+import { Item } from "@/type/item";
 import { formatDistanceToNow } from "date-fns";
 import { useFavorites } from "./FavoritesContext";
 import NavigationComponent from "@/components/NavigationComponent";
@@ -23,7 +22,7 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 export default function DetailScreen() {
   const params = useLocalSearchParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
-  const [item, setItem] = useState<ArtTool | null>(null);
+  const [item, setItem] = useState<Item | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [imageHeight, setImageHeight] = useState(300);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
@@ -43,7 +42,7 @@ export default function DetailScreen() {
     if (!id) return;
     setIsLoading(true);
     try {
-      const data = await ArtToolApi.getById(id);
+      const data = await ItemApi.getById(id);
       if (data) {
         setItem(data);
         Image.getSize(data.image, (width, height) => {
@@ -158,27 +157,27 @@ export default function DetailScreen() {
     );
   }
 
-  const averageRating =
-    item.comments && item.comments.length > 0
-      ? item.comments.reduce((sum, comment) => sum + comment.rating, 0) /
-        item.comments.length
-      : 0;
+  // const averageRating =
+  //   item.comments && item.comments.length > 0
+  //     ? item.comments.reduce((sum, comment) => sum + comment.rating, 0) /
+  //       item.comments.length
+  //     : 0;
 
-  const filteredComments =
-    selectedRating !== null
-      ? item.comments?.filter(
-          (comment) => Math.floor(comment.rating) === selectedRating
-        ) || []
-      : item.comments || [];
+  // const filteredComments =
+  //   selectedRating !== null
+  //     ? item.comments?.filter(
+  //         (comment) => Math.floor(comment.rating) === selectedRating
+  //       ) || []
+  //     : item.comments || [];
 
-  const availableRatings = Array.from(
-    new Set(item.comments?.map((comment) => Math.floor(comment.rating)))
-  ).sort((a, b) => a - b);
+  // const availableRatings = Array.from(
+  //   new Set(item.comments?.map((comment) => Math.floor(comment.rating)))
+  // ).sort((a, b) => a - b);
 
-  const discountedPrice = item.price * (1 - item.limitedTimeDeal);
+  const discountedPrice = item.price * (1 - item.percentage);
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <View className="flex-1 bg-white">
       <ScrollView>
         <View className="relative">
           <TouchableOpacity onPress={() => setShowFullImage(true)}>
@@ -199,9 +198,9 @@ export default function DetailScreen() {
           </TouchableOpacity>
         </View>
         <View className="p-4">
-          <Text className="text-3xl font-bold">{item.artName}</Text>
+          <Text className="text-3xl font-bold">{item.itemName}</Text>
           <View className="flex-row items-center mt-2">
-            {item.limitedTimeDeal > 0 ? (
+            {item.percentage > 0 ? (
               <>
                 <Text className="text-2xl text-gray-700 line-through">
                   ${item.price.toFixed(2)}
@@ -210,7 +209,7 @@ export default function DetailScreen() {
                   ${discountedPrice.toFixed(2)}
                 </Text>
                 <Text className="text-lg text-red-500 font-bold ml-2">
-                  ({Math.round(item.limitedTimeDeal * 100)}% OFF)
+                  ({Math.round(item.percentage * 100)}% OFF)
                 </Text>
               </>
             ) : (
@@ -219,7 +218,7 @@ export default function DetailScreen() {
               </Text>
             )}
           </View>
-          {averageRating > 0 && (
+          {/* {averageRating > 0 && (
             <View className="flex-row items-center mt-4">
               {renderStars(averageRating)}
               <Text className="ml-2 text-lg font-semibold">
@@ -229,22 +228,22 @@ export default function DetailScreen() {
                 ({item.comments?.length || 0} ratings)
               </Text>
             </View>
-          )}
+          )} */}
           <Text className="text-gray-600 mt-4 text-base leading-6">
             {item.description}
           </Text>
           <View className="mt-4 bg-gray-100 p-4 rounded-lg">
-            <Text className="font-semibold text-lg mb-2">Product Details</Text>
+            <Text className="font-semibold text-lg mb-2">Details</Text>
             <Text className="mb-2">
-              <Text className="font-medium">Brand:</Text> {item.brand}
+              <Text className="font-medium">Category:</Text> {item.itemCategory}
             </Text>
             <Text>
-              <Text className="font-medium">Suitable for Glass Surface:</Text>{" "}
-              {item.glassSurface ? "Yes" : "No"}
+              <Text className="font-medium">Is Boolean:</Text>{" "}
+              {item.isBoolean ? "Yes" : "No"}
             </Text>
           </View>
 
-          {item.comments && item.comments.length > 0 && (
+          {/* {item.comments && item.comments.length > 0 && (
             <View className="mt-6">
               <Text className="text-2xl font-bold mb-4">Customer Reviews</Text>
               <ScrollView
@@ -319,7 +318,7 @@ export default function DetailScreen() {
                 </View>
               ))}
             </View>
-          )}
+          )} */}
         </View>
       </ScrollView>
 
@@ -338,7 +337,7 @@ export default function DetailScreen() {
           />
         </View>
       </Modal>
-      <NavigationComponent/>
-    </SafeAreaView>
+      <NavigationComponent />
+    </View>
   );
 }

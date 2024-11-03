@@ -12,15 +12,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Trash2 } from "lucide-react-native";
 import { Swipeable } from "react-native-gesture-handler";
-import { ArtToolApi } from "@/api/artTool";
-import { ArtTool } from "@/type/art-tool";
+import { ItemApi } from "@/api/item";
+import { Item } from "@/type/item";
 
 export default function FavoritesScreen() {
   const {
     state: { favorites },
     dispatch,
   } = useFavorites();
-  const [favoriteItems, setFavoriteItems] = useState<ArtTool[]>([]);
+  const [favoriteItems, setFavoriteItems] = useState<Item[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,11 +54,9 @@ export default function FavoritesScreen() {
     setIsLoading(true);
     try {
       const favoriteData = await Promise.all(
-        favorites.map((id) => ArtToolApi.getById(id))
+        favorites.map((id) => ItemApi.getById(id))
       );
-      setFavoriteItems(
-        favoriteData.filter((item) => item !== null) as ArtTool[]
-      );
+      setFavoriteItems(favoriteData.filter((item) => item !== null) as Item[]);
     } catch (error) {
       console.error("Error loading favorites:", error);
     } finally {
@@ -125,7 +123,7 @@ export default function FavoritesScreen() {
     }
   };
 
-  const renderRightActions = (product: ArtTool) => {
+  const renderRightActions = (product: Item) => {
     return (
       <TouchableOpacity
         className="bg-red-500 w-20 h-full justify-center items-center rounded-lg"
@@ -136,10 +134,10 @@ export default function FavoritesScreen() {
     );
   };
 
-  const handleDelete = (product: ArtTool) => {
+  const handleDelete = (product: Item) => {
     Alert.alert(
       "Remove from Favorites",
-      `Are you sure you want to remove ${product.artName} from your favorites?`,
+      `Are you sure you want to remove ${product.itemName} from your favorites?`,
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -163,14 +161,12 @@ export default function FavoritesScreen() {
     </View>
   );
 
-  const renderItem = ({ item }: { item: ArtTool | {} }) => {
+  const renderItem = ({ item }: { item: Item }) => {
     if (isLoading) return renderSkeletonItem();
-
-    const artTool = item as ArtTool;
     return (
       <Swipeable
         ref={(ref) => {
-          swipeableRefs.current[artTool.id] = ref;
+          swipeableRefs.current[item.id] = ref;
           if (ref) {
             if (openSwipeableRef.current && openSwipeableRef.current !== ref) {
               openSwipeableRef.current.close(); // Close the previously open swipeable
@@ -178,47 +174,47 @@ export default function FavoritesScreen() {
             openSwipeableRef.current = ref; // Update the currently open swipeable
           }
         }}
-        renderRightActions={() => renderRightActions(artTool)}
+        renderRightActions={() => renderRightActions(item)}
         enabled={!isSelectionMode}
         containerStyle={{ marginBottom: 10 }}
         onSwipeableWillOpen={() => {
           if (
             openSwipeableRef.current &&
-            openSwipeableRef.current !== swipeableRefs.current[artTool.id]
+            openSwipeableRef.current !== swipeableRefs.current[item.id]
           ) {
             openSwipeableRef.current.close(); // Close the previous swipeable
           }
-          openSwipeableRef.current = swipeableRefs.current[artTool.id]; // Update the open swipeable ref
+          openSwipeableRef.current = swipeableRefs.current[item.id]; // Update the open swipeable ref
         }}
       >
         <TouchableOpacity
-          onLongPress={() => handleLongPress(artTool.id)}
-          onPress={() => handlePress(artTool.id)}
+          onLongPress={() => handleLongPress(item.id)}
+          onPress={() => handlePress(item.id)}
           delayLongPress={500}
         >
           <View
             className={`bg-gray-50 flex-row items-center p-4 rounded-lg shadow-sm ${
-              isSelectionMode && selectedItems.includes(artTool.id)
+              isSelectionMode && selectedItems.includes(item.id)
                 ? "bg-blue-50"
                 : ""
             }`}
           >
             <Image
-              source={{ uri: artTool.image }}
+              source={{ uri: item.image }}
               className="w-16 h-16 rounded-lg mr-4"
               resizeMode="cover"
             />
             <View className="flex-1">
               <Text numberOfLines={1} className="text-lg font-bold mb-1">
-                {artTool.artName}
+                {item.itemName}
               </Text>
               <Text className="text-sm text-gray-600 dark:text-gray-400">
-                ${(artTool.price * (1 - artTool.limitedTimeDeal)).toFixed(2)}
+                ${(item.price * (1 - item.percentage)).toFixed(2)}
               </Text>
             </View>
             {isSelectionMode && (
               <View className="w-6 h-6 border-2 border-blue-500 rounded-full justify-center items-center">
-                {selectedItems.includes(artTool.id) && (
+                {selectedItems.includes(item.id) && (
                   <View className="w-4 h-4 bg-blue-500 rounded-full" />
                 )}
               </View>
